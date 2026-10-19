@@ -1,31 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowDown, Download, Github, Linkedin, Mail } from "lucide-react";
-import { personal } from "@/data/portfolio";
+import { ArrowDown, FileText } from "lucide-react";
+import { Orbit } from "@/components/hero/Orbit";
+import { LocalTime } from "@/components/ui/LocalTime";
+import { TypedGreeting } from "@/components/ui/TypedGreeting";
+import { greetings, heroStatement, personal, workedWith } from "@/data/portfolio";
+import { cn } from "@/lib/utils";
 
-const MARQUEE = [
-  "PyTorch",
-  "TensorFlow",
-  "LangGraph",
-  "FastAPI",
-  "RAG",
-  "Docker",
-  "Kubernetes",
-  "Gemini",
-  "Claude",
-  "Next.js",
-  "ChromaDB",
-  "AWS",
-  "GCP",
-  "Whisper",
-];
-
-const SOCIALS = [
-  { href: `mailto:${personal.email}`, label: "Email", Icon: Mail, external: false },
-  { href: personal.github, label: "GitHub", Icon: Github, external: true },
-  { href: personal.linkedin, label: "LinkedIn", Icon: Linkedin, external: true },
-];
+const MARK_STYLES = {
+  sans: "text-[17px] font-semibold tracking-tight",
+  mono: "font-mono text-[13px] font-semibold uppercase tracking-[0.16em]",
+  serif: "font-serif text-[21px] italic",
+} as const;
 
 export function Hero() {
   const reduce = useReducedMotion();
@@ -35,126 +23,97 @@ export function Hero() {
     reduce
       ? {}
       : {
-          initial: { opacity: 0, y: 16 },
+          initial: { opacity: 0, y: 14 },
           animate: { opacity: 1, y: 0 },
           transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
         };
 
   return (
-    // The copy centres in whatever space is left over and the marquee sits on
-    // the fold, rather than both centring as one block and leaving a dead gap
-    // beneath the strip.
     <section
       id="top"
       aria-labelledby="hero-heading"
-      className="relative flex min-h-[100svh] flex-col overflow-hidden pt-32 sm:pt-36"
+      className="relative overflow-hidden pb-16 pt-32 sm:pb-20 sm:pt-40"
     >
-      <div className="flex flex-1 items-center">
-        <div className="shell">
-        <motion.p
-          {...rise(0)}
-          className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 py-1 pl-1.5 pr-3.5 text-xs text-muted backdrop-blur"
-        >
-          <span className="relative grid h-5 w-5 place-items-center">
-            <span className="absolute h-2 w-2 rounded-full bg-positive/60 motion-safe:animate-ping" />
-            <span className="relative h-1.5 w-1.5 rounded-full bg-positive" />
-          </span>
-          {personal.availability}
-        </motion.p>
+      {/* Warm wash behind the hero, fading out before the first section. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-12 -z-10 h-96 w-full max-w-4xl -translate-x-1/2 bg-gradient-to-b from-accent/[0.08] via-accent/[0.02] to-transparent blur-3xl"
+      />
 
-        <motion.h1
-          {...rise(0.06)}
-          id="hero-heading"
-          className="mt-7 max-w-[16ch] text-display font-semibold"
-        >
-          {personal.firstName}{" "}
-          <span className="text-gradient">{personal.lastName}</span>
-        </motion.h1>
+      <div className="shell">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-10">
+          <div className="lg:col-span-8">
+            <motion.div {...rise(0)}>
+              <TypedGreeting words={greetings} />
+            </motion.div>
 
-        <motion.p
-          {...rise(0.12)}
-          className="mt-5 font-mono text-sm uppercase tracking-[0.2em] text-accent sm:text-base"
-        >
-          {personal.role}
-        </motion.p>
+            <motion.h1
+              {...rise(0.08)}
+              id="hero-heading"
+              className="mt-5 max-w-3xl text-[28px] font-medium leading-[1.22] tracking-tight text-heading sm:text-[36px] sm:leading-[1.18]"
+            >
+              {heroStatement.map((part) =>
+                part.emphasis ? (
+                  <span
+                    key={part.text}
+                    className="underline decoration-subtle/70 decoration-1 underline-offset-[6px]"
+                  >
+                    {part.text}
+                  </span>
+                ) : (
+                  <span key={part.text}>{part.text}</span>
+                )
+              )}
+            </motion.h1>
 
-        <motion.p
-          {...rise(0.18)}
-          className="mt-6 max-w-prose text-lg leading-relaxed text-muted sm:text-xl"
-        >
-          {personal.tagline}
-        </motion.p>
+            <motion.div {...rise(0.16)} className="mt-8 flex flex-wrap items-center gap-2.5">
+              <span className="inline-flex items-center gap-2 rounded-full border border-positive/25 bg-positive/[0.08] px-3 py-1.5 text-xs font-medium text-positive">
+                <span className="relative grid h-2 w-2 place-items-center">
+                  <span className="absolute h-2 w-2 rounded-full bg-positive/60 motion-safe:animate-ping" />
+                  <span className="relative h-1.5 w-1.5 rounded-full bg-positive" />
+                </span>
+                {personal.availability}
+              </span>
+              <Link href="/#work" className="pill">
+                View work
+                <ArrowDown className="h-3 w-3" aria-hidden />
+              </Link>
+              <a href={personal.resumePath} className="pill">
+                <FileText className="h-3 w-3" aria-hidden />
+                Résumé
+              </a>
+            </motion.div>
+          </div>
 
-        <motion.div
-          {...rise(0.24)}
-          className="mt-9 flex flex-wrap items-center gap-3"
-        >
-          <a href="#projects" className="btn-primary group">
-            View projects
-            <ArrowDown
-              aria-hidden
-              className="h-4 w-4 transition-transform duration-200 group-hover:translate-y-0.5"
-            />
-          </a>
-          <a href={personal.resumePath} download className="btn-ghost">
-            <Download className="h-4 w-4" aria-hidden />
-            Résumé
-          </a>
-
-          <span aria-hidden className="mx-1 hidden h-6 w-px bg-line sm:block" />
-
-          <ul className="flex items-center gap-1.5">
-            {SOCIALS.map(({ href, label, Icon, external }) => (
-              <li key={label}>
-                <a
-                  href={href}
-                  aria-label={label}
-                  target={external ? "_blank" : undefined}
-                  rel={external ? "noopener noreferrer" : undefined}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/40 hover:text-accent"
-                >
-                  <Icon className="h-4 w-4" aria-hidden />
-                </a>
-              </li>
-            ))}
-            </ul>
+          <motion.div
+            {...rise(0.2)}
+            className="flex flex-col items-center justify-center lg:col-span-4"
+          >
+            <Orbit initials={personal.initials} />
+            <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.18em] text-subtle">
+              {personal.locationShort} · {personal.timeZoneLabel}{" "}
+              <LocalTime timeZone={personal.timeZone} />
+            </p>
           </motion.div>
         </div>
-      </div>
 
-      <motion.div {...rise(0.32)} className="mt-16 pb-10 sm:mt-20 sm:pb-12">
-        <Marquee />
-      </motion.div>
-    </section>
-  );
-}
-
-/**
- * Continuous tech strip. The list is duplicated so the translation can loop
- * seamlessly; the copy is hidden from assistive tech to avoid reading it twice.
- */
-function Marquee() {
-  return (
-    <div className="mask-fade-x border-y border-line/70 py-3.5">
-      <div className="flex w-max animate-marquee items-center gap-3 [--marquee-duration:48s] motion-reduce:animate-none">
-        {[0, 1].map((copy) => (
-          <ul
-            key={copy}
-            aria-hidden={copy === 1 || undefined}
-            className="flex shrink-0 items-center gap-3 pr-3"
-          >
-            {MARQUEE.map((item) => (
+        <motion.div {...rise(0.28)} className="mt-16 sm:mt-20">
+          <p className="eyebrow">Worked with</p>
+          <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {workedWith.map((company) => (
               <li
-                key={`${copy}-${item}`}
-                className="flex items-center gap-3 font-mono text-xs text-subtle"
+                key={company.name}
+                className="flex flex-col items-start justify-center gap-1.5 rounded-xl border border-line/80 bg-surface/50 px-5 py-4"
               >
-                {item}
-                <span aria-hidden className="h-1 w-1 rounded-full bg-accent/50" />
+                <span className={cn("text-muted", MARK_STYLES[company.mark])}>
+                  {company.name}
+                </span>
+                <span className="font-mono text-[10px] text-subtle">{company.detail}</span>
               </li>
             ))}
           </ul>
-        ))}
+        </motion.div>
       </div>
-    </div>
+    </section>
   );
 }
