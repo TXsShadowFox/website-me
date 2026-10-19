@@ -10,11 +10,18 @@ import { useEffect, useState } from "react";
  * Instead we keep a live set of visible ids and pick the one nearest the top of
  * the viewport on every change, falling back to "nothing active" above the first
  * section and pinning the last section once the page is scrolled to the bottom.
+ *
+ * The nav lives in the root layout and outlives page changes, so `enabled`
+ * re-runs the effect when the visitor navigates back to the page that owns the
+ * sections — otherwise it would keep observing elements that no longer exist.
  */
-export function useActiveSection(ids: readonly string[]) {
+export function useActiveSection(ids: readonly string[], enabled = true) {
   const [active, setActive] = useState<string>("");
 
   useEffect(() => {
+    setActive("");
+    if (!enabled) return;
+
     const elements = ids
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
@@ -88,7 +95,7 @@ export function useActiveSection(ids: readonly string[]) {
       window.removeEventListener("resize", schedule);
       if (frame) cancelAnimationFrame(frame);
     };
-  }, [ids]);
+  }, [ids, enabled]);
 
   return active;
 }

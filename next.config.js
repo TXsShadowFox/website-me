@@ -11,19 +11,6 @@
  */
 const isDev = process.env.NODE_ENV === "development";
 
-/** Allow the contact form to POST to whatever endpoint is configured. */
-function formOrigin() {
-  const endpoint = process.env.NEXT_PUBLIC_FORM_ENDPOINT;
-  if (!endpoint) return "";
-  try {
-    const { origin, protocol } = new URL(endpoint);
-    // Never widen the policy for a plaintext endpoint.
-    return protocol === "https:" ? ` ${origin}` : "";
-  } catch {
-    return "";
-  }
-}
-
 const csp = [
   "default-src 'self'",
   // 'unsafe-eval' is only needed by the dev-mode React refresh runtime.
@@ -32,8 +19,8 @@ const csp = [
   "img-src 'self' data: blob:",
   // next/font self-hosts its files at build time, so no external font hosts.
   "font-src 'self'",
-  `connect-src 'self'${formOrigin()}${isDev ? " ws: wss:" : ""}`,
-  `form-action 'self'${formOrigin()}`,
+  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  "form-action 'self'",
   "frame-ancestors 'none'",
   "base-uri 'none'",
   "object-src 'none'",

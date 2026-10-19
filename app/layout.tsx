@@ -1,14 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Instrument_Serif, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Backdrop } from "@/components/layout/Backdrop";
-import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { personal, education, skillGroups } from "@/data/portfolio";
 import "./globals.css";
 
-const sans = Inter({
+const sans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
@@ -20,13 +18,24 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
+/** Used sparingly — italic accents only. */
+const serif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: "italic",
+  variable: "--font-serif",
+  display: "swap",
+});
+
 const description =
-  "AI / Machine Learning Engineer building production ML systems: RAG pipelines, multi-agent workflows, computer vision, and the MLOps to ship them. Python, PyTorch, TensorFlow, FastAPI, Docker, Kubernetes, AWS & GCP.";
+  "Software engineer building production AI systems — multi-tenant RAG platforms, agents and models — and the distributed backends that run them. Python, FastAPI, PostgreSQL, Redis, PyTorch, LangGraph, Docker, AWS.";
+
+const title = `${personal.name} — ${personal.role}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(personal.siteUrl),
   title: {
-    default: `${personal.name} - ${personal.role}`,
+    default: title,
     template: `%s | ${personal.name}`,
   },
   description,
@@ -35,14 +44,15 @@ export const metadata: Metadata = {
   creator: personal.name,
   keywords: [
     personal.name,
-    "AI Engineer",
+    "Software Engineer",
+    "Backend Engineer",
+    "Generative AI Engineer",
     "Machine Learning Engineer",
-    "MLOps",
     "RAG",
     "LangGraph",
+    "FastAPI",
+    "Distributed Systems",
     "PyTorch",
-    "TensorFlow",
-    "Computer Vision",
     "Portfolio",
     "Dehradun",
   ],
@@ -50,14 +60,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: personal.siteUrl,
-    siteName: `${personal.name} - Portfolio`,
-    title: `${personal.name} - ${personal.role}`,
+    siteName: `${personal.name} — Portfolio`,
+    title,
     description,
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${personal.name} - ${personal.role}`,
+    title,
     description,
   },
   robots: {
@@ -72,8 +82,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafafc" },
-    { media: "(prefers-color-scheme: dark)", color: "#08090d" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f3ee" },
+    { media: "(prefers-color-scheme: dark)", color: "#141413" },
   ],
 };
 
@@ -122,14 +132,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${sans.variable} ${mono.variable}`}
+      className={`${sans.variable} ${mono.variable} ${serif.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-screen overflow-x-hidden">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          enableSystem
+          enableSystem={false}
           disableTransitionOnChange
         >
           <a
@@ -139,8 +149,6 @@ export default function RootLayout({
             Skip to content
           </a>
 
-          <Backdrop />
-          <ScrollProgress />
           <Navbar />
           <main id="main">{children}</main>
           <Footer />
