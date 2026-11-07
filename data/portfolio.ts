@@ -34,7 +34,7 @@ export type ProjectCategory = (typeof projectCategories)[number];
  * Illustrated covers drawn by `ProjectCover`. Only featured work has one; every
  * other project renders as a compact card.
  */
-export type CoverScene = "chat" | "dag" | "review" | "selfcheck";
+export type CoverScene = "chat" | "dag" | "review" | "selfcheck" | "budget" | "lowlight";
 
 export type ProjectLink = { label: string; href: string };
 
@@ -121,7 +121,7 @@ export const workedWith: {
 ];
 
 export const bio =
-  "I'm a final-year Computer Science student at UPES specialising in AI & ML, and I build software end to end — from training models to shipping them behind fast, observable backends. Recently that has meant a real-time talking-avatar system at Introspect Labs, a multi-tenant RAG platform running on AWS, and a distributed task queue that survives killed workers. I trust numbers over vibes: evaluations, load tests, and the tests that keep them true.";
+  "I'm a final-year Computer Science student at UPES specialising in AI & ML, and I build software end to end — from training models to shipping them behind fast, observable backends. Recently that has meant a real-time talking-avatar system at Introspect Labs, a multi-tenant RAG platform running on AWS, and a distributed task queue that survives killed workers — plus two research papers that extend published work in retrieval-augmented generation and low-light vision. I trust numbers over vibes: evaluations, load tests, and the tests that keep them true.";
 
 export const experiences: ExperienceItem[] = [
   {
@@ -485,6 +485,48 @@ export const projects: Project[] = [
       { value: "200", label: "Bird species" },
     ],
     repo: "https://github.com/TXsShadowFox/Fine-Tuned-Image-Classification-on-Bird",
+  },
+  {
+    id: "kidney-ct-classifier",
+    title: "Kidney CT Tumor Classifier",
+    kicker: "VGG16 transfer learning behind a reproducible DVC pipeline, a web app and AWS CI/CD",
+    category: "Computer Vision",
+    year: "2026",
+    blurb:
+      "An end-to-end MLOps project that classifies kidney CT slices as Normal or Tumor. A frozen ImageNet VGG16 with a new softmax head is trained through a four-stage DVC pipeline, runs can be tracked in MLflow, a Flask app lets anyone upload a scan and see class probabilities, and GitHub Actions retrains, builds a Docker image and deploys it to AWS. It is a learning project, not a medical device.",
+    problem:
+      "A notebook that reaches good accuracy once is not a product. The model has to be retrainable from scratch with one command, its scores have to come from data it never saw, and the serving app has to handle bad uploads and a retrained model without restarts — and the original code had bugs in rescaling, paths, model caching, the validation split and layer freezing, plus a hard-coded DagsHub token.",
+    approach: [
+      "Four DVC stages — data ingestion (70/15/15 train/val/test split), base-model preparation (VGG16 without its top, frozen, plus Flatten and a Dense softmax head), training and evaluation — so `dvc repro` rebuilds only what changed.",
+      "Evaluation scores 1,104 held-out test slices and writes accuracy, recall, specificity, precision, F1, ROC AUC and the confusion matrix to `scores.json`; MLflow logging (local or DagsHub) can be switched on.",
+      "Fixed the prediction and evaluation bugs (input rescaling, artifact paths, model caching, validation split and freeze logic) and moved the DagsHub token out of the code into the environment.",
+      "Flask web app with drag-and-drop upload, a sample scan, per-class probability bars and a live model report read from `scores.json`; the `/predict` API decodes images in memory and hot-reloads the model when `model.h5` changes.",
+      "`/train` retrains in the background but is disabled unless a `TRAIN_TOKEN` is set and sent in a header.",
+      "GitHub Actions downloads the Kaggle dataset, runs `dvc repro`, builds the Docker image, pushes it to Amazon ECR and deploys it on EC2 through a self-hosted runner.",
+    ],
+    results: [
+      "98% tumor recall on 1,104 unseen test slices — 335 of 342 tumors caught, only 7 missed.",
+      "87% accuracy, 0.904 ROC AUC and 82% specificity; the model leans cautious, so about 3 in 10 tumor flags are false alarms, which the README states plainly.",
+      "One command (`dvc repro`) retrains and refreshes every metric; the web page's report updates by itself.",
+      "A Docker image that refuses to build without a trained model, and an automated path from a push to `main` to a running container on AWS.",
+    ],
+    stack: [
+      "TensorFlow / Keras",
+      "VGG16",
+      "DVC",
+      "MLflow",
+      "scikit-learn",
+      "Flask",
+      "Docker",
+      "GitHub Actions",
+      "AWS ECR / EC2",
+    ],
+    metrics: [
+      { value: "98%", label: "Tumor recall" },
+      { value: "0.904", label: "ROC AUC" },
+      { value: "1,104", label: "Unseen test slices" },
+    ],
+    repo: "https://github.com/TXsShadowFox/Kidney-Diesese-Classification",
   },
   {
     id: "enterprise-rag",
@@ -918,6 +960,257 @@ export const moreProjectIds = [
   "medicheck-ai",
 ];
 
+export type ResultTable = {
+  caption: string;
+  columns: string[];
+  /** The row whose `highlight` is set is drawn in the accent colour. */
+  rows: { cells: string[]; highlight?: boolean }[];
+  note?: string;
+};
+
+export type ResearchPaper = {
+  /** Also the URL slug: /research/<id>. */
+  id: string;
+  /** Short project name used on cards and in the nav of the page. */
+  title: string;
+  /** Working title of the manuscript. */
+  paperTitle: string;
+  kicker: string;
+  field: string;
+  year: string;
+  status: string;
+  cover: CoverScene;
+  /** The published work this research builds on, credited on every page. */
+  basePaper: { title: string; authors: string; venue: string; href: string };
+  abstract: string;
+  question: string;
+  contributions: { title: string; detail: string }[];
+  method: string[];
+  table: ResultTable;
+  findings: string[];
+  limitations: string[];
+  stack: string[];
+  metrics: Metric[];
+  repo?: string;
+};
+
+/**
+ * Independent follow-up research on published papers, done for academic,
+ * non-commercial purposes. Every number comes from the manuscript drafts.
+ */
+export const research: ResearchPaper[] = [
+  {
+    id: "ab-rag-reexamined",
+    title: "AB-RAG, Re-examined",
+    paperTitle:
+      "Re-examining AB-RAG: Answer Format, Inert Signals and the Source of Adaptive-Retrieval Gains",
+    kicker:
+      "Is confidence-based adaptive retrieval better than stopping at random? An audit, three fixes and a fairer evaluation protocol.",
+    field: "NLP · Retrieval-augmented generation",
+    year: "2026",
+    status: "Manuscript complete · preparing submission",
+    cover: "budget",
+    basePaper: {
+      title: "AB-RAG: Adaptive Budgeted Retrieval-Augmented Generation",
+      authors: "Kamthan et al.",
+      venue: "arXiv:2606.29090",
+      href: "https://arxiv.org/abs/2606.29090",
+    },
+    abstract:
+      "AB-RAG answers a question from five retrieved passages, scores its own confidence with three signals, and fetches five more passages per round until it is confident or has spent three rounds. Its paper reports gains over fixed-depth retrieval measured with exact match. I re-checked every published number against the released code and per-question logs, re-scored the same answers with labels that do not depend on wording, and then regenerated the open-model setup on 1,000 new questions while recording every round. The headline: the reported accuracy is real, but most of it comes from answer wording and from starting with fewer passages — on the new runs, confidence-based stopping is no more accurate than stopping at random with the same retrieval budget.",
+    question:
+      "Adaptive RAG rests on two claims: that a confidence score can tell when the evidence is already enough, and that spending retrieval only where confidence is low buys accuracy. Both are usually judged with exact match, which marks a correct answer wrong if it comes inside a sentence. If answer length moves with the amount of evidence or with confidence, exact match can turn a change in wording into an apparent gain in accuracy and calibration.",
+    contributions: [
+      {
+        title: "Audit of the paper against its own logs",
+        detail:
+          "The main results and confidence tables reproduce exactly, and open-retrieval recall reproduces from scratch. Four mismatches surfaced: two runs used different signal weights than reported (recovered by least squares to within 10⁻⁴), the τ = 0.30 sweep row equals the static baseline instead of the replayed value, two signal AUROCs were scored with the wrong sign or variant, and two worked examples cannot come from the released log.",
+      },
+      {
+        title: "Answer format confounds accuracy and calibration",
+        detail:
+          "Under a containment label the +4.5 EM gain over static retrieval on TriviaQA disappears (80.5% vs 81.0%, p = 1.0). Claude's 'never-correct' low-confidence answers are 53–61% correct under containment, and answer length alone predicts EM-correctness better than AB-RAG's confidence (AUROC 0.83 and 0.90 vs 0.68 and 0.73).",
+      },
+      {
+        title: "Two of the three confidence signals are inert",
+        detail:
+          "Holding the evidence-similarity and reranker-variance signals at their run mean flips no stopping decision in three of the four released runs — in practice the method is a threshold on one signal.",
+      },
+      {
+        title: "Exact decomposition of the gain",
+        detail:
+          "Two thirds of the TriviaQA gain comes from starting with five passages instead of ten, not from iterating.",
+      },
+      {
+        title: "Three improvements",
+        detail:
+          "I1, a copy-only answer extractor that never sees the reference; I2, returning the best-confidence round; and R1, a stronger reranker chosen on held-out development questions.",
+      },
+      {
+        title: "A full-trace protocol with a budget-matched random control",
+        detail:
+          "Every question is answered at every round, so any stopping rule — including random stopping that spends exactly AB-RAG's retrieval budget — is compared on identical answers.",
+      },
+    ],
+    method: [
+      "Re-scored every released answer three ways: SQuAD exact match, exact match with TriviaQA aliases, and whole-word containment of the reference.",
+      "Paired every comparison question by question with exact McNemar tests and 10,000-resample paired bootstrap intervals, reporting questions gained and lost in each direction.",
+      "Fixed a 500-question test split and a disjoint 300-question development split; every tuning choice, including the reranker, was made on development questions only.",
+      "Ran full traces on a university PBS cluster (3× H100): Qwen2.5-1.5B answers at K = 5, 10 and 15 passages with five samples per round, over corpora of 7,947 (HotpotQA) and 11,124 (TriviaQA) passages.",
+      "Replayed AB-RAG at every threshold from 0.30 to 0.95 against 1,000–2,000 random permutations of its stopping rounds.",
+      "Rebuilt every number in the paper from saved outputs with scripts, and reported null and negative results as they came.",
+    ],
+    table: {
+      caption: "Exact match (%) before and after this work",
+      columns: ["Setting", "Paper", "This work"],
+      rows: [
+        { cells: ["Claude Haiku · HotpotQA (released answers, + I1 + I2)", "33.0", "45.5"] },
+        { cells: ["Claude Haiku · TriviaQA (released answers, + I1 + I2)", "40.0", "46.5"] },
+        { cells: ["Qwen-1.5B · HotpotQA (released answers, + I1 + I2)", "34.5", "38.5"] },
+        { cells: ["HotpotQA recall@5 (+ R1 reranker)", "86.6", "92.9"] },
+        { cells: ["New 500 questions · HotpotQA (+ R1 + I1)", "38.0", "44.2"] },
+        {
+          cells: ["New 500 questions · AB-RAG vs random stopping", "38.0", "37.9 [37.0, 38.8]"],
+          highlight: true,
+        },
+      ],
+      note: "Brackets: 95% interval of budget-matched random stopping.",
+    },
+    findings: [
+      "I1 and I2 raise exact match on all four released runs by 3.0 to 12.5 points, and I1 never turned a correct answer wrong (0 of 305).",
+      "Given the same extraction step, static retrieval closes the gap: AB-RAG's TriviaQA advantage is no longer significant (p = 0.15).",
+      "On the new runs confidence passes the threshold after round one for 85–91% of questions, so AB-RAG behaves almost like static retrieval with five passages — and at every threshold it stays within 0.6 points of random stopping.",
+      "The extractor's gain holds on questions never used to design it (+4.7 and +2.4 EM, p < 0.001 and p = 0.016).",
+      "A stronger reranker lifts static-retrieval EM on HotpotQA by 4.4 points but AB-RAG's by only 0.8.",
+      "Takeaway for practitioners: fix answer format first, upgrade the reranker second, and adopt an adaptive stopping rule only after it beats random stopping at the same budget.",
+    ],
+    limitations: [
+      "The released runs cover 200 questions each, so one- or two-point differences sit inside the confidence intervals.",
+      "Containment is lenient and can credit an answer that mentions the reference while asserting something else; it is reported next to exact match, not instead of it.",
+      "The full traces use one 1.5B-parameter generator; a larger model that uses extra passages better could leave a stopping rule more room.",
+    ],
+    stack: [
+      "Python",
+      "PyTorch",
+      "Hugging Face Transformers",
+      "Qwen2.5-1.5B",
+      "FAISS",
+      "BM25",
+      "bge rerankers",
+      "SciPy",
+      "PBS / H100 cluster",
+      "LaTeX",
+    ],
+    metrics: [
+      { value: "+12.5", label: "Exact-match points, best run" },
+      { value: "4", label: "Paper–log mismatches found" },
+      { value: "1,000", label: "New questions traced" },
+    ],
+    repo: "https://github.com/TXsShadowFox/NP",
+  },
+  {
+    id: "multinex-ga",
+    title: "Multinex-GA",
+    paperTitle:
+      "Global Illumination Conditioning and Reflectance-Guided Modulation for Micro-Scale Low-Light Image Enhancement",
+    kicker:
+      "Two plug-in modules that give a 696-parameter low-light enhancer global exposure awareness and texture detail — for 238 extra parameters.",
+    field: "Computer vision · Low-light enhancement",
+    year: "2026",
+    status: "Manuscript drafted · preparing submission",
+    cover: "lowlight",
+    basePaper: {
+      title: "Multinex: Lightweight Low-Light Image Enhancement via Multi-prior Retinex",
+      authors: "Brateanu, Mu, Ancuti & Ancuti",
+      venue: "CVPR 2026",
+      href: "https://arxiv.org/abs/2604.10359",
+    },
+    abstract:
+      "Multinex-Nano brightens dark photos with only 696 parameters, which makes it attractive for always-on and embedded cameras. I first reproduced the paper's results on a GPU cluster with the released code, then added two modules aimed at the weak spots of a model that small: GIC gives it a sense of the whole image's exposure, and ARMG feeds edge and texture detail back in before the output. Both start as exact identity functions, so training begins from the baseline. The 934-parameter Nano-GA beats Multinex-Nano on PSNR and SSIM on all three LOL benchmarks, and a widened 8.9K-parameter Micro-GA becomes the strongest model under 10K parameters on every paired metric but one.",
+    question:
+      "At micro scale two things go wrong. Each output pixel sees only an 11×11 window, so the model cannot tell a uniformly dark scene from a bright scene with one dark corner — yet they need different corrections. And the learned corrections are smooth, so brightening flattens texture. Can both be fixed for a few hundred parameters, without changing the training recipe?",
+    contributions: [
+      {
+        title: "Global Illumination Conditioner (GIC)",
+        detail:
+          "Summarises the illumination and colour prior stacks Multinex already computes — mean, spread, log-average luminance (the 'key' used by tone mapping) and gray-world colour — and turns them into per-channel FiLM scale and shift, applied before the fusion blocks. 132 parameters at Nano width.",
+      },
+      {
+        title: "Adaptive Reflectance Modulation Guidance (ARMG)",
+        detail:
+          "Computes a parameter-free single-scale Retinex reflectance map, which responds to edges equally in dark and bright regions, and predicts pixel-wise multiplicative and additive maps (F·M + A) right before the decoding heads. 106 parameters at Nano width.",
+      },
+      {
+        title: "Identity initialisation",
+        detail:
+          "Both output layers start at zero, so at step 0 the model computes exactly Multinex-Nano — verified against the released checkpoint to within 10⁻⁶. The modules can only learn a residual on top of the baseline.",
+      },
+      {
+        title: "Two variants inside the micro regime",
+        detail:
+          "Nano-GA keeps every Nano hyperparameter (934 parameters); Micro-GA widens to 20 channels and 3 fusion blocks (8,890 parameters, 0.44 GFLOPs).",
+      },
+      {
+        title: "Transparent evaluation",
+        detail:
+          "Released checkpoints are re-scored with the same code as the new models, and the paper reports where the method does not yet help.",
+      },
+    ],
+    method: [
+      "Reproduced Multinex first, unchanged: re-evaluating the released checkpoints matches the published LOL numbers to within 0.01 dB, and a retrained Nano reproduces LOL-v1.",
+      "Traced a 3–6 point BRISQUE gap against the paper to resolution-dependent preprocessing in the metric setup, not to the models, so no-reference scores are compared only on identical code.",
+      "Trained with the released Nano recipe unchanged (Adam, 100K iterations, cosine restarts, MSE + MS-SSIM + VGG loss, seed 100), one model per LOL split, on a PBS cluster of H100 GPUs.",
+      "Evaluated PSNR, SSIM and LPIPS on LOL-v1, LOL-v2-real and LOL-v2-synthetic, and NIQE and BRISQUE on the unpaired MEF, LIME, DICM and NPE sets.",
+      "Measured cost as parameters, GFLOPs and median GPU latency at 600×400; wrote unit tests for the new architecture and a profiling script.",
+    ],
+    table: {
+      caption: "PSNR (dB) / SSIM on the paired LOL benchmarks",
+      columns: ["Model", "Params", "LOL-v1", "LOL-v2-real", "LOL-v2-syn"],
+      rows: [
+        { cells: ["Multinex-Nano", "696", "19.42 / 0.742", "19.66 / 0.784", "21.05 / 0.882"] },
+        { cells: ["Nano-GA (ours)", "934", "20.41 / 0.802", "21.52 / 0.811", "22.25 / 0.908"] },
+        {
+          cells: ["Micro-GA (ours)", "8,890", "21.84 / 0.825", "21.49 / 0.847", "23.69 / 0.919"],
+          highlight: true,
+        },
+      ],
+      note: "Higher is better for both numbers.",
+    },
+    findings: [
+      "Nano-GA gains +0.99, +1.86 and +1.20 dB PSNR and higher SSIM on all three splits, for 238 extra parameters and 13% more FLOPs.",
+      "The gain is not the training recipe: under the identical recipe and seed, a retrained Multinex-Nano reaches 19.61 dB on LOL-v1, and Nano-GA still adds +0.80 dB.",
+      "Micro-GA improves PSNR by +1.8 to +2.6 dB and cuts LPIPS by 39–48%, closing 55–66% of the gap to the 44.6K-parameter Multinex with 20% of its parameters.",
+      "On unpaired photos the result is mixed and reported as such: Nano-GA is best on MEF and improves mean BRISQUE, while mean NIQE is only matched.",
+      "The modules add about 0.24 ms of latency at Nano scale, where kernel launches rather than arithmetic dominate.",
+    ],
+    limitations: [
+      "The single-module ablations (GIC only, ARMG only) and the ExDark detection benchmark are still to run.",
+      "All results come from one training seed; checkpoints are picked by test-split PSNR, following the official implementation.",
+      "Generalisation to brighter, more varied unpaired scenes is the main open problem.",
+    ],
+    stack: [
+      "Python",
+      "PyTorch",
+      "BasicSR",
+      "Retinex theory",
+      "FiLM conditioning",
+      "piq / LPIPS",
+      "PBS / H100 cluster",
+      "LaTeX",
+    ],
+    metrics: [
+      { value: "+1.86 dB", label: "Best PSNR gain, Nano-GA" },
+      { value: "934", label: "Parameters in total" },
+      { value: "−48%", label: "Perceptual error (LPIPS), Micro-GA" },
+    ],
+    repo: "https://github.com/TXsShadowFox/multinex-research-paper",
+  },
+];
+
+export function getResearch(id: string) {
+  return research.find((paper) => paper.id === id);
+}
+
 /**
  * Declared after `projects` so the headline count is derived, not typed by
  * hand — adding a project can no longer leave the About stat stale.
@@ -1100,6 +1393,7 @@ export const achievements: { value: string; label: string; href?: string }[] = [
 export const navLinks = [
   { href: "/#about", id: "about", label: "About" },
   { href: "/#work", id: "work", label: "Work" },
+  { href: "/#research", id: "research", label: "Research" },
   { href: "/#experience", id: "experience", label: "Experience" },
   { href: "/#skills", id: "skills", label: "Skills" },
   { href: "/#credentials", id: "credentials", label: "Credentials" },
