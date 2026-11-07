@@ -116,6 +116,7 @@ export const workedWith: {
   mark: "sans" | "mono" | "serif";
 }[] = [
   { name: "Introspect Labs", detail: "Generative AI Engineer Intern · 2026", mark: "sans" },
+  { name: "IBM", detail: "Machine Learning Engineer · 2026", mark: "mono" },
   { name: "DOI Soft Tech", detail: "AI Engineer Intern · 2025", mark: "mono" },
   { name: "Freelance", detail: "Backend Developer, US client · 2025", mark: "serif" },
 ];
@@ -148,6 +149,22 @@ export const experiences: ExperienceItem[] = [
       "STT / TTS",
       "CI",
     ],
+  },
+  {
+    company: "IBM",
+    role: "Machine Learning Engineer",
+    project: "Deepfake detection models",
+    location: "Remote",
+    start: "Jun 2026",
+    end: "Jul 2026",
+    summary:
+      "Developed and benchmarked deepfake detection models, from research papers to measured results.",
+    bullets: [
+      "Developed and optimised deepfake detection models with PyTorch, TensorFlow, OpenCV and Python, improving reported detection accuracy from 83% to 95%.",
+      "Implemented and compared deep-learning architectures from 3–4 research papers, evaluating each on accuracy, precision and recall.",
+      "Integrated MediaPipe, ArcFace and facial feature extraction to support computer-vision model development and experiments.",
+    ],
+    stack: ["Python", "PyTorch", "TensorFlow", "OpenCV", "MediaPipe", "ArcFace"],
   },
   {
     company: "DOI Soft Tech",
