@@ -18,6 +18,8 @@ const TINTS: Record<CoverScene, string> = {
   dag: "45 180 160",
   review: "150 120 230",
   selfcheck: "230 100 110",
+  budget: "70 160 220",
+  lowlight: "240 190 80",
 };
 
 const SCENES: Record<CoverScene, () => ReactNode> = {
@@ -25,6 +27,8 @@ const SCENES: Record<CoverScene, () => ReactNode> = {
   dag: DagScene,
   review: ReviewScene,
   selfcheck: SelfCheckScene,
+  budget: BudgetScene,
+  lowlight: LowLightScene,
 };
 
 export function ProjectCover({
@@ -426,6 +430,179 @@ function SelfCheckScene() {
 
       <text x={56} y={259} fontSize={9} className="fill-subtle font-mono">
         fused: prompt judge · embeddings · semantic entropy
+      </text>
+    </>
+  );
+}
+
+/* AB-RAG re-examined: confidence stopping inside the random-stopping band. */
+const STATIC_K = [
+  { k: 5, x: 80, y: 133 },
+  { k: 10, x: 185, y: 143 },
+  { k: 15, x: 290, y: 129 },
+];
+
+function BudgetScene() {
+  return (
+    <>
+      <Window x={40} y={26} w={400} h={248} title="ab-rag · stopping rule vs random · 500 q" />
+
+      <text x={64} y={70} fontSize={8.5} letterSpacing={1.5} className="fill-subtle font-mono">
+        EXACT MATCH
+      </text>
+      <line x1={64} x2={306} y1={186} y2={186} className="stroke-line2" />
+
+      <path
+        d="M80 128 C140 106 220 104 290 114 L290 150 C220 156 140 154 80 138 Z"
+        className="fill-accent/15"
+      />
+      <path
+        d="M80 133 C140 127 220 125 290 131"
+        fill="none"
+        strokeWidth={2}
+        className="stroke-accent"
+      />
+      <circle cx={112} cy={130} r={4.5} strokeWidth={1.5} className="fill-surface stroke-accent" />
+
+      {STATIC_K.map((point) => (
+        <g key={point.k}>
+          <rect
+            x={point.x - 4}
+            y={point.y - 4}
+            width={8}
+            height={8}
+            rx={1.5}
+            className="fill-surface stroke-fg/50"
+          />
+          <text
+            x={point.x}
+            y={200}
+            fontSize={8.5}
+            textAnchor="middle"
+            className="fill-subtle font-mono"
+          >
+            {point.k}
+          </text>
+        </g>
+      ))}
+      <text x={306} y={214} fontSize={8.5} textAnchor="end" className="fill-subtle font-mono">
+        passages read
+      </text>
+
+      <line x1={322} x2={322} y1={60} y2={226} className="stroke-line" />
+      <text x={338} y={100} fontSize={26} fontWeight={700} className="fill-fg">
+        38.0
+      </text>
+      <text x={338} y={116} fontSize={9.5} className="fill-accent font-mono">
+        AB-RAG
+      </text>
+      <text x={338} y={158} fontSize={26} fontWeight={700} className="fill-muted">
+        37.9
+      </text>
+      <text x={338} y={174} fontSize={9.5} className="fill-muted font-mono">
+        random stopping
+      </text>
+      <text x={338} y={200} fontSize={9.5} className="fill-subtle font-mono">
+        P = 0.50
+      </text>
+
+      <rect x={64} y={232} width={14} height={8} rx={2} className="fill-accent/25" />
+      <text x={84} y={239.5} fontSize={9} className="fill-muted font-mono">
+        same budget, random
+      </text>
+      <rect x={202} y={232} width={8} height={8} rx={1.5} className="fill-surface stroke-fg/50" />
+      <text x={216} y={239.5} fontSize={9} className="fill-muted font-mono">
+        static K
+      </text>
+      <text x={56} y={262} fontSize={9} className="fill-subtle font-mono">
+        85–91% of questions stop after round 1
+      </text>
+    </>
+  );
+}
+
+/* Multinex-GA: a dark input and its enhanced output. --------------------- */
+function Photo({ x, y, enhanced }: { x: number; y: number; enhanced?: boolean }) {
+  const id = enhanced ? "ll-sky-bright" : "ll-sky-dark";
+  return (
+    <g>
+      <defs>
+        <linearGradient id={id} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor={enhanced ? "#7FA9D6" : "#141922"} />
+          <stop offset="1" stopColor={enhanced ? "#E9C99A" : "#1E1C22"} />
+        </linearGradient>
+        <clipPath id={`${id}-clip`}>
+          <rect x={x} y={y} width={164} height={112} rx={10} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${id}-clip)`}>
+        <rect x={x} y={y} width={164} height={112} fill={`url(#${id})`} />
+        <circle cx={x + 120} cy={y + 34} r={13} fill={enhanced ? "#F6D27A" : "#33303A"} />
+        <path
+          d={`M${x} ${y + 84} L${x + 42} ${y + 50} L${x + 74} ${y + 76} L${x + 112} ${y + 44} L${x + 164} ${y + 86} L${x + 164} ${y + 112} L${x} ${y + 112} Z`}
+          fill={enhanced ? "#5E8A6C" : "#181C22"}
+        />
+        <rect x={x + 26} y={y + 74} width={34} height={26} fill={enhanced ? "#C77E5B" : "#232027"} />
+        <path
+          d={`M${x + 22} ${y + 76} L${x + 43} ${y + 60} L${x + 64} ${y + 76} Z`}
+          fill={enhanced ? "#8C4A3A" : "#1C1A20"}
+        />
+        <rect x={x + 38} y={y + 84} width={9} height={9} fill={enhanced ? "#F6E3A8" : "#2A2730"} />
+      </g>
+      <rect
+        x={x}
+        y={y}
+        width={164}
+        height={112}
+        rx={10}
+        fill="none"
+        className="stroke-line2"
+      />
+      <rect x={x + 8} y={y + 8} width={enhanced ? 58 : 40} height={16} rx={5} className="fill-surface/85" />
+      <text x={x + 14} y={y + 19.5} fontSize={8.5} className="fill-body font-mono">
+        {enhanced ? "Nano-GA" : "input"}
+      </text>
+    </g>
+  );
+}
+
+const LL_STATS = [
+  { label: "PSNR", from: "19.42", to: "20.41 dB" },
+  { label: "SSIM", from: "0.742", to: "0.802" },
+];
+
+function LowLightScene() {
+  return (
+    <>
+      <Window x={36} y={24} w={408} h={254} title="multinex-ga · 934 params · LOL-v1" />
+
+      <Photo x={56} y={66} />
+      <Photo x={260} y={66} enhanced />
+      <path d="M228 122 L252 122 M245 116 L252 122 L245 128" fill="none" strokeWidth={1.5} className="stroke-accent" />
+
+      {LL_STATS.map((stat, i) => (
+        <g key={stat.label}>
+          <text x={56 + i * 132} y={204} fontSize={8.5} letterSpacing={1.5} className="fill-subtle font-mono">
+            {stat.label}
+          </text>
+          <text x={56 + i * 132} y={222} fontSize={11.5} className="fill-muted font-mono">
+            {stat.from}
+            <tspan className="fill-subtle"> → </tspan>
+            <tspan fontWeight={600} className="fill-fg">
+              {stat.to}
+            </tspan>
+          </text>
+        </g>
+      ))}
+      <text x={320} y={204} fontSize={8.5} letterSpacing={1.5} className="fill-subtle font-mono">
+        ADDED
+      </text>
+      <text x={320} y={222} fontSize={11.5} fontWeight={600} className="fill-accent font-mono">
+        +238 params
+      </text>
+
+      <text x={56} y={258} fontSize={9} className="fill-subtle font-mono">
+        GIC · global exposure FiLM  ·  ARMG · Retinex texture guidance
       </text>
     </>
   );

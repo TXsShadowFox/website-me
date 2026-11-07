@@ -21,8 +21,14 @@ export function Navbar() {
 
   const sectionIds = useMemo(() => navLinks.map((l) => l.id), []);
   const section = useActiveSection(sectionIds, onHome);
-  // Project pages belong to the Work section.
-  const active = onHome ? section : pathname.startsWith("/projects") ? "work" : "";
+  // Case-study pages belong to the section that lists them.
+  const active = onHome
+    ? section
+    : pathname.startsWith("/projects")
+      ? "work"
+      : pathname.startsWith("/research")
+        ? "research"
+        : "";
 
   return (
     <>

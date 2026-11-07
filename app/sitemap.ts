@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { personal, projects } from "@/data/portfolio";
+import { personal, projects, research } from "@/data/portfolio";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
@@ -16,6 +16,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "yearly" as const,
       priority: project.featured ? 0.7 : 0.5,
+    })),
+    ...research.map((paper) => ({
+      url: `${personal.siteUrl}/research/${paper.id}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
   ];
 }
