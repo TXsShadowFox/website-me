@@ -99,7 +99,7 @@ export function Hero() {
 
         <motion.div {...rise(0.28)} className="mt-16 sm:mt-20">
           <p className="eyebrow">Worked with</p>
-          <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {workedWith.map((company) => (
               <li
                 key={company.name}
